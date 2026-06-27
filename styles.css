@@ -1,0 +1,1473 @@
+/* ============================================================
+   Inventario Toners y Cartuchos — Bruno Fritsch
+   Premium Design System CSS
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   1. Google Fonts
+   ---------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ----------------------------------------------------------
+   2. CSS Custom Properties (Light Mode — Default)
+   ---------------------------------------------------------- */
+:root {
+  /* Surface */
+  --background: #FFFFFF;
+  --foreground: #111827;
+
+  /* Card */
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+
+  /* Brand */
+  --primary: #F3612D;
+  --primary-foreground: #FFFFFF;
+
+  /* Secondary */
+  --secondary: #212529;
+  --secondary-foreground: #FFFFFF;
+
+  /* Muted */
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+
+  /* Accent */
+  --accent: #F3F4F6;
+  --accent-foreground: #111827;
+
+  /* Destructive */
+  --destructive: #DC2626;
+
+  /* Borders & Inputs */
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+
+  /* Focus ring */
+  --ring: #F3612D;
+
+  /* Radius */
+  --radius: 0.5rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+  /* Chart palette */
+  --chart-2: #2563EB;
+  --chart-5: #8B5CF6;
+}
+
+/* ----------------------------------------------------------
+   3. Global Reset
+   ---------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ----------------------------------------------------------
+   4. Body
+   ---------------------------------------------------------- */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ----------------------------------------------------------
+   5. Scrollbar Styling
+   ---------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+/* ----------------------------------------------------------
+   6. Typography Utilities
+   ---------------------------------------------------------- */
+.font-heading {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.text-xs   { font-size: 0.75rem;  line-height: 1rem; }
+.text-sm   { font-size: 0.875rem; line-height: 1.25rem; }
+.text-base { font-size: 1rem;     line-height: 1.5rem; }
+.text-lg   { font-size: 1.125rem; line-height: 1.75rem; }
+.text-xl   { font-size: 1.25rem;  line-height: 1.75rem; }
+.text-2xl  { font-size: 1.5rem;   line-height: 2rem; }
+
+.font-medium   { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold     { font-weight: 700; }
+
+.text-muted { color: var(--muted-foreground); }
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+/* ----------------------------------------------------------
+   7. Layout Utilities
+   ---------------------------------------------------------- */
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.flex          { display: flex; }
+.flex-col      { flex-direction: column; }
+.flex-wrap     { flex-wrap: wrap; }
+.items-center  { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center  { justify-content: center; }
+.justify-end     { justify-content: flex-end; }
+
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-5 { gap: 1.25rem; }
+.gap-6 { gap: 1.5rem; }
+
+.grid { display: grid; }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.hidden   { display: none; }
+.relative { position: relative; }
+.absolute { position: absolute; }
+
+.w-full { width: 100%; }
+.min-w-0 { min-width: 0; }
+
+.overflow-x-auto { overflow-x: auto; }
+.overflow-y-auto { overflow-y: auto; }
+
+.text-right  { text-align: right; }
+.text-center { text-align: center; }
+.text-left   { text-align: left; }
+
+/* ----------------------------------------------------------
+   8. Spacing Utilities
+   ---------------------------------------------------------- */
+/* Padding */
+.p-2 { padding: 0.5rem; }
+.p-3 { padding: 0.75rem; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.p-8 { padding: 2rem; }
+
+.px-2 { padding-left: 0.5rem;  padding-right: 0.5rem; }
+.px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+.px-4 { padding-left: 1rem;    padding-right: 1rem; }
+
+.py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+.py-2 { padding-top: 0.5rem;  padding-bottom: 0.5rem; }
+.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+.py-4 { padding-top: 1rem;    padding-bottom: 1rem; }
+.py-6 { padding-top: 1.5rem;  padding-bottom: 1.5rem; }
+.py-8 { padding-top: 2rem;    padding-bottom: 2rem; }
+
+/* Margin — Top */
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 0.75rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.mt-8 { margin-top: 2rem; }
+
+/* Margin — Bottom */
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+
+/* Margin — Left / Right */
+.mr-1 { margin-right: 0.25rem; }
+.mr-2 { margin-right: 0.5rem; }
+.ml-1 { margin-left: 0.25rem; }
+.ml-auto { margin-left: auto; }
+
+/* ----------------------------------------------------------
+   9. Card Component
+   ---------------------------------------------------------- */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 0;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card-header {
+  padding: 1.5rem 1.5rem 0;
+}
+
+.card-content {
+  padding: 1.5rem;
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--card-foreground);
+}
+
+.card-description {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* ----------------------------------------------------------
+   10. Button Component
+   ---------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  outline: none;
+  white-space: nowrap;
+  text-decoration: none;
+  line-height: 1.5;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn-primary:hover {
+  background-color: #e0551f;
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.btn-secondary:hover {
+  background-color: #343a40;
+}
+
+.btn-outline {
+  border: 1px solid var(--border);
+  background-color: transparent;
+  color: var(--foreground);
+}
+
+.btn-outline:hover {
+  background-color: var(--muted);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--foreground);
+}
+
+.btn-ghost:hover {
+  background-color: var(--muted);
+}
+
+.btn-destructive {
+  background-color: var(--destructive);
+  color: #ffffff;
+}
+
+.btn-destructive:hover {
+  background-color: #b91c1c;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.btn-icon {
+  padding: 0.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------
+   11. Input Component
+   ---------------------------------------------------------- */
+.input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-family: inherit;
+  background-color: var(--background);
+  color: var(--foreground);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  line-height: 1.5;
+}
+
+.input:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px rgba(243, 97, 45, 0.15);
+}
+
+.input::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.6;
+}
+
+.input-with-icon {
+  padding-left: 2.25rem;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------
+   12. Label Component
+   ---------------------------------------------------------- */
+.label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+/* ----------------------------------------------------------
+   13. Badge Component
+   ---------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+  cursor: default;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.badge-default {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.badge-secondary {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.badge-outline {
+  background-color: transparent;
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.badge-destructive {
+  background-color: var(--destructive);
+  color: #ffffff;
+}
+
+/* ----------------------------------------------------------
+   14. Select / Dropdown Component
+   ---------------------------------------------------------- */
+.select-wrapper {
+  position: relative;
+}
+
+.select-trigger {
+  width: 100%;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-family: inherit;
+  background-color: var(--background);
+  color: var(--foreground);
+  outline: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  line-height: 1.5;
+}
+
+.select-trigger:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px rgba(243, 97, 45, 0.15);
+}
+
+.select-trigger::after {
+  content: '▾';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+.select-content {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 0.25rem;
+  display: none;
+}
+
+.select-content.open {
+  display: block;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.select-item {
+  padding: 0.5rem 0.75rem;
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.1s ease, color 0.1s ease;
+  color: var(--foreground);
+}
+
+.select-item:hover {
+  background-color: var(--accent);
+}
+
+.select-item.selected {
+  background-color: rgba(243, 97, 45, 0.1);
+  color: var(--primary);
+}
+
+.select-item.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.select-placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.6;
+}
+
+/* ----------------------------------------------------------
+   15. Table Component
+   ---------------------------------------------------------- */
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  background-color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr.row-hover {
+  transition: background-color 0.15s ease;
+}
+
+tr.row-hover:hover {
+  background-color: var(--muted);
+}
+
+.row-warning {
+  background-color: rgba(220, 38, 38, 0.05);
+}
+
+/* ----------------------------------------------------------
+   16. Dialog / Modal Component
+   ---------------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background-color: var(--background);
+  border-radius: calc(var(--radius) * 2);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: scale(0.95) translateY(8px);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0;
+}
+
+.modal-overlay.open .modal {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.modal-header {
+  padding: 1.5rem 1.5rem 0;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 0 1.5rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.modal-description {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin-top: 0.25rem;
+}
+
+/* ----------------------------------------------------------
+   17. Toast / Notification
+   ---------------------------------------------------------- */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: var(--shadow-md);
+  animation: slideInRight 0.3s ease-out;
+  min-width: 280px;
+  max-width: 420px;
+  pointer-events: auto;
+}
+
+.toast-success {
+  background-color: #059669;
+  color: #ffffff;
+}
+
+.toast-error {
+  background-color: var(--destructive);
+  color: #ffffff;
+}
+
+.toast-exit {
+  animation: slideOutRight 0.3s ease-in forwards;
+}
+
+/* ----------------------------------------------------------
+   18. Sortable Header
+   ---------------------------------------------------------- */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.sortable-header:hover {
+  color: var(--foreground);
+}
+
+.sort-icon {
+  margin-left: 0.25rem;
+  font-size: 0.75rem;
+  opacity: 0.4;
+  display: inline-block;
+}
+
+.sort-icon.active {
+  opacity: 1;
+}
+
+/* ----------------------------------------------------------
+   19. Stats Card
+   ---------------------------------------------------------- */
+.stats-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-icon-wrapper {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* ----------------------------------------------------------
+   20. Filter Badge
+   ---------------------------------------------------------- */
+.filter-badge {
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-badge:hover {
+  opacity: 0.85;
+}
+
+.filter-badge.active {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: transparent;
+}
+
+/* ----------------------------------------------------------
+   21. Skeleton Loading
+   ---------------------------------------------------------- */
+.skeleton {
+  background: linear-gradient(90deg, var(--muted) 25%, #e5e7eb 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius);
+  height: 1rem;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ----------------------------------------------------------
+   22. Animations
+   ---------------------------------------------------------- */
+@keyframes fadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slideUp {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  0%   { opacity: 0; transform: translateX(100%); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  0%   { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(100%); }
+}
+
+@keyframes pulseOnce {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.03); }
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+.animate-fade-in     { animation: fadeIn 0.3s ease-out both; }
+.animate-slide-up    { animation: slideUp 0.35s ease-out both; }
+.animate-live-pulse  { animation: livePulse 2s ease-in-out infinite; }
+
+.stagger-1 { animation-delay: 75ms; }
+.stagger-2 { animation-delay: 150ms; }
+.stagger-3 { animation-delay: 225ms; }
+.stagger-4 { animation-delay: 300ms; }
+
+/* ----------------------------------------------------------
+   23. Pagination
+   ---------------------------------------------------------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.page-info {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+/* ----------------------------------------------------------
+   24. Live Indicator Dot
+   ---------------------------------------------------------- */
+.live-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: #22c55e;
+  flex-shrink: 0;
+}
+
+/* ----------------------------------------------------------
+   25. Avatar / User Icon Wrapper
+   ---------------------------------------------------------- */
+.user-avatar {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* ----------------------------------------------------------
+   26. Responsive Helpers
+   ---------------------------------------------------------- */
+
+/* Mobile-first: hidden by default, revealed at breakpoints */
+.sm-only,
+.md-only {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .sm-show       { display: flex; }
+  .sm-show-block { display: block; }
+  .sm-table-cell { display: table-cell; }
+  .sm-flex-row   { flex-direction: row; }
+  .sm-only       { display: revert; }
+}
+
+@media (min-width: 768px) {
+  .md-show        { display: flex; }
+  .md-show-block  { display: block; }
+  .md-table-cell  { display: table-cell; }
+  .md-grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .md-only        { display: revert; }
+}
+
+@media (min-width: 1024px) {
+  .lg-grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ----------------------------------------------------------
+   27. Tab Navigation
+   ---------------------------------------------------------- */
+.nav-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+
+.nav-tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: inherit;
+}
+
+.nav-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.nav-tab:hover {
+  color: var(--foreground);
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* ----------------------------------------------------------
+   28. Checkbox Toggle
+   ---------------------------------------------------------- */
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 1px solid var(--input);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.checkbox:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.checkbox:checked::after {
+  content: '✓';
+  color: #ffffff;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.checkbox:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* ----------------------------------------------------------
+   29. Confirmation Dialog (extends Modal)
+   ---------------------------------------------------------- */
+.confirm-dialog .modal-header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.confirm-dialog .confirm-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: rgba(220, 38, 38, 0.1);
+  color: var(--destructive);
+  flex-shrink: 0;
+  font-size: 1.125rem;
+}
+
+/* ----------------------------------------------------------
+   30. Spinner
+   ---------------------------------------------------------- */
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 9999px;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Button loading state */
+.btn-loading {
+  position: relative;
+  cursor: wait;
+  opacity: 0.85;
+}
+
+.btn-loading .spinner {
+  display: inline-block;
+}
+
+/* White spinner inside colored buttons */
+.btn-primary.btn-loading .spinner,
+.btn-secondary.btn-loading .spinner,
+.btn-destructive.btn-loading .spinner {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+}
+
+/* Outline/ghost buttons keep the primary spinner */
+.btn-outline.btn-loading .spinner,
+.btn-ghost.btn-loading .spinner {
+  border-color: var(--border);
+  border-top-color: var(--primary);
+}
+
+/* ----------------------------------------------------------
+   31. Empty State
+   ---------------------------------------------------------- */
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+/* ----------------------------------------------------------
+   32. Search Input Container
+   ---------------------------------------------------------- */
+.search-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+  width: 1rem;
+  height: 1rem;
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------
+   33. Icon Sizes
+   ---------------------------------------------------------- */
+.icon-sm { width: 0.875rem; height: 0.875rem; }
+.icon-md { width: 1rem;     height: 1rem; }
+.icon-lg { width: 1.25rem;  height: 1.25rem; }
+
+/* ----------------------------------------------------------
+   34. Login Page
+   ---------------------------------------------------------- */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--muted);
+}
+
+.login-card {
+  max-width: 28rem;
+  width: 100%;
+  padding: 2rem;
+  border-radius: 1rem;
+  background-color: var(--background);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+.login-logo {
+  width: 3.5rem;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background-color: var(--primary);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  color: var(--primary-foreground);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* ----------------------------------------------------------
+   35. Header Logo (Smaller variant)
+   ---------------------------------------------------------- */
+.header-logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  flex-shrink: 0;
+}
+
+/* ----------------------------------------------------------
+   36. Extra Responsive Utilities
+   ---------------------------------------------------------- */
+.sm-only-block,
+.sm-only-inline,
+.sm-only-cell,
+.md-only-cell {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .sm-only-block  { display: block; }
+  .sm-only-inline { display: inline; }
+  .sm-only-cell   { display: table-cell; }
+  .sm-flex-row    { flex-direction: row; align-items: center; }
+}
+
+@media (min-width: 768px) {
+  .md-only-cell   { display: table-cell; }
+}
+
+/* ----------------------------------------------------------
+   37. Spinning Animation (Refresh button)
+   ---------------------------------------------------------- */
+@keyframes spin360 {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.spinning svg {
+  animation: spin360 0.8s ease-in-out;
+}
+
+/* ----------------------------------------------------------
+   38. Flex column utility
+   ---------------------------------------------------------- */
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ----------------------------------------------------------
+   39. Page-size select native override
+   ---------------------------------------------------------- */
+select.input {
+  appearance: auto;
+  cursor: pointer;
+}
+
+/* ----------------------------------------------------------
+   40. Additional micro-adjustments
+   ---------------------------------------------------------- */
+.mr-2 { margin-right: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+.gap-1 { gap: 0.25rem; }
+
+.font-semibold { font-weight: 600; }
+.w-full { width: 100%; }
+.min-w-0 { min-width: 0; }
+
+/* ===========================================================
+   41. MOBILE RESPONSIVE OVERRIDES
+   =========================================================== */
+
+/* --- Extra-small screens (phones, < 640px) --- */
+@media (max-width: 639px) {
+
+  /* Container: less side padding */
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  /* Stats grid: 2 columns tighter */
+  .grid-cols-2 {
+    gap: 0.5rem;
+  }
+
+  /* Stats card inner padding */
+  .stats-card .card-content {
+    padding: 0.875rem;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  .stat-icon-wrapper {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .stat-icon-wrapper svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Card padding reduction */
+  .card-header {
+    padding: 1rem 1rem 0;
+  }
+
+  .card-content {
+    padding: 1rem;
+  }
+
+  /* Modal adjustments */
+  .modal-overlay {
+    padding: 0.5rem;
+    align-items: flex-end;
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  .modal-overlay.open .modal {
+    transform: scale(1) translateY(0);
+  }
+
+  .modal-header {
+    padding: 1.25rem 1rem 0;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    padding: 0 1rem 1rem;
+    flex-direction: column;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Grid in modals (stock actual / stock minimo) */
+  .modal .grid-cols-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Dashboard header: stack vertically */
+  .sm-flex-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Header buttons: wrap and full-width on tiny screens */
+  #page-dashboard .flex.items-center.gap-3 {
+    flex-wrap: wrap;
+  }
+
+  /* "Registrar retiro" and "Gestion" buttons: full width on mobile */
+  .btn-primary,
+  .btn-secondary {
+    font-size: 0.8125rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  /* Table: smaller padding, smaller font */
+  th {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  td {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Table wrapper: negative margin to use full viewport */
+  .table-wrapper {
+    border-radius: var(--radius);
+    margin-left: -0.25rem;
+    margin-right: -0.25rem;
+  }
+
+  /* Toast on mobile: full width centered */
+  .toast-container {
+    top: 0.5rem;
+    right: 0.5rem;
+    left: 0.5rem;
+  }
+
+  .toast {
+    min-width: unset;
+    max-width: 100%;
+    font-size: 0.8125rem;
+  }
+
+  /* Login card: less padding on mobile */
+  .login-card {
+    padding: 1.5rem;
+    margin: 0.5rem;
+    border-radius: 0.75rem;
+  }
+
+  /* Font size overrides */
+  .font-heading {
+    font-size: 1.125rem;
+  }
+
+  h1.font-heading {
+    font-size: 1.125rem;
+  }
+
+  .text-2xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+
+  /* Pagination controls */
+  .pagination,
+  .flex.items-center[style*="justify-content:space-between"][style*="flex-wrap"] {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  /* Configuration / Users page header */
+  #page-configuracion .flex.items-center.gap-4,
+  #page-usuarios .flex.items-center.gap-4 {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  /* Inventory management header: stack buttons */
+  #page-inventory .flex.items-center.gap-2 {
+    flex-wrap: wrap;
+  }
+
+  /* Nav tabs: scrollable on mobile */
+  .nav-tabs {
+    gap: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Select trigger: ensure touch-friendly height */
+  .select-trigger {
+    min-height: 2.5rem;
+  }
+
+  /* Input: touch-friendly height */
+  .input {
+    min-height: 2.5rem;
+    font-size: 1rem; /* prevents iOS zoom on focus */
+  }
+
+  /* Recent activity items */
+  #recent-list > div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  #recent-list > div > .flex:last-child {
+    margin-left: 0;
+  }
+
+  /* Filter badges: scroll horizontally */
+  .flex.flex-wrap.gap-2 {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+  }
+
+  /* Btn icon: slightly smaller touch target */
+  .btn-icon {
+    width: 2rem;
+    height: 2rem;
+    padding: 0.375rem;
+  }
+
+  /* History search + date filters: stack */
+  .flex.gap-4.items-center.flex-wrap {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* --- Small screens (landscape phones, small tablets 640-767px) --- */
+@media (min-width: 640px) and (max-width: 767px) {
+  .modal {
+    max-width: 28rem;
+  }
+
+  .grid-cols-2 {
+    gap: 0.75rem;
+  }
+}
+
+/* --- Touch device improvements --- */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  .btn {
+    min-height: 2.5rem;
+  }
+
+  .btn-sm {
+    min-height: 2rem;
+    padding: 0.375rem 0.75rem;
+  }
+
+  .btn-icon {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+  }
+
+  .select-item {
+    padding: 0.625rem 0.75rem;
+  }
+
+  /* Remove hover effects that don't apply on touch */
+  .stats-card:hover {
+    transform: none;
+  }
+
+  tr.row-hover:hover {
+    background-color: transparent;
+  }
+}
+
+/* --- Safe area insets (notched phones) --- */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .modal-footer {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+
+  .toast-container {
+    top: calc(0.5rem + env(safe-area-inset-top));
+  }
+}
