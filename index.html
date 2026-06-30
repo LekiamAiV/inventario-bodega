@@ -48,13 +48,13 @@
       <form id="login-form" style="margin-top:2rem;">
         <div class="flex flex-col gap-4">
           <div class="flex flex-col gap-2">
-            <label class="label" for="login-usuario">Usuario</label>
+            <label class="label" for="login-usuario">Correo Electrónico</label>
             <div class="search-wrapper">
               <svg class="input-icon icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="8" r="5"/>
                 <path d="M20 21a8 8 0 0 0-16 0"/>
               </svg>
-              <input id="login-usuario" class="input input-with-icon" placeholder="Ej: admin" required>
+              <input id="login-usuario" type="email" class="input input-with-icon" placeholder="Ej: admin@bodega.com" required>
             </div>
           </div>
           <div class="flex flex-col gap-2">
@@ -304,8 +304,8 @@
               <input id="usr-nombre" class="input" placeholder="Ej: Juan Pérez" required>
             </div>
             <div class="flex flex-col gap-2">
-              <label class="label" for="usr-usuario">Nombre de Usuario (Login)</label>
-              <input id="usr-usuario" class="input" placeholder="Ej: jperez" required>
+              <label class="label" for="usr-usuario">Correo Electrónico (Login)</label>
+              <input id="usr-usuario" type="email" class="input" placeholder="Ej: jperez@bodega.com" required>
             </div>
             <div class="flex flex-col gap-2">
               <label class="label" for="usr-password">Contraseña</label>
@@ -622,6 +622,7 @@
   ═══════════════════════════════════════════════════════════════ -->
   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
 
   <script src="app.js"></script>
 </body>
