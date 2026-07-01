@@ -1087,6 +1087,9 @@ function renderWithdrawalsHistory() {
               <button class="btn btn-outline btn-sm" onclick="exportToCSV()" ${retiros.length === 0 ? "disabled" : ""}>
                 ${ICONS.download} Exportar
               </button>
+              <button class="btn btn-primary btn-sm" onclick="openHistoricalWithdrawalDialog()">
+                ${ICONS.plus} Ingresar Histórico
+              </button>
             </div>
           </div>
         </div>
@@ -1390,6 +1393,152 @@ async function confirmWithdrawal() {
   } catch (error) {
     console.error(error);
     showToast("Error al registrar retiro", "error");
+  } finally {
+    resetBtn(btnWd);
+  }
+}
+
+// ─── Historical Withdrawal Dialog ───────────────────────────
+function openHistoricalWithdrawalDialog() {
+  const marcas = db("marcas").sort((a, b) => a.nombre.localeCompare(b.nombre));
+  const items = db("items").sort((a, b) => {
+    const lA = itemLabel(a).toLowerCase();
+    const lB = itemLabel(b).toLowerCase();
+    return lA.localeCompare(lB);
+  });
+  const usuarios = db("usuarios").sort((a, b) =>
+    a.nombre.localeCompare(b.nombre),
+  );
+  const sucursales = db("sucursales").sort((a, b) =>
+    a.nombre.localeCompare(b.nombre),
+  );
+  const departamentos = db("departamentos").sort((a, b) =>
+    a.nombre.localeCompare(b.nombre),
+  );
+
+  // Default to yesterday or current date minus some time
+  const now = new Date();
+  now.setDate(now.getDate() - 1);
+  const offset = now.getTimezoneOffset() * 60000;
+  const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
+  document.getElementById("hwd-fecha").value = localISOTime;
+
+  document.getElementById("hwd-cantidad").value = "1";
+  document.getElementById("hwd-nombre").value = "";
+
+  populateSelect(
+    "hwd-item-dropdown",
+    "hwd-item-trigger",
+    items,
+    (i) => itemLabel(i),
+    true,
+  );
+  populateSelect(
+    "hwd-auth-dropdown",
+    "hwd-auth-trigger",
+    usuarios,
+    (u) => u.nombre,
+    true,
+  );
+  populateSelect(
+    "hwd-suc-dropdown",
+    "hwd-suc-trigger",
+    sucursales,
+    (s) => s.nombre,
+    true,
+  );
+  populateSelect(
+    "hwd-dep-dropdown",
+    "hwd-dep-trigger",
+    departamentos,
+    (d) => d.nombre,
+    true,
+  );
+
+  initSelect("hwd-item-trigger", "hwd-item-dropdown");
+  initSelect("hwd-auth-trigger", "hwd-auth-dropdown");
+  initSelect("hwd-suc-trigger", "hwd-suc-dropdown");
+  initSelect("hwd-dep-trigger", "hwd-dep-dropdown");
+  initSelect("hwd-vacio-trigger", "hwd-vacio-dropdown");
+
+  openModal("modal-historical-withdrawal");
+}
+
+async function confirmHistoricalWithdrawal() {
+  const fechaInput = document.getElementById("hwd-fecha").value;
+  const codigoItem = document.getElementById("hwd-item-trigger").dataset.value;
+  const cantidad = parseInt(document.getElementById("hwd-cantidad").value) || 0;
+  const entregaVacio =
+    document.getElementById("hwd-vacio-trigger").dataset.value === "si";
+  const nombreRetira = document.getElementById("hwd-nombre").value.trim();
+  const idAutorizador =
+    document.getElementById("hwd-auth-trigger").dataset.value;
+  const idSucursal = document.getElementById("hwd-suc-trigger").dataset.value;
+  const idDepartamento =
+    document.getElementById("hwd-dep-trigger").dataset.value;
+
+  if (
+    !fechaInput ||
+    !codigoItem ||
+    !nombreRetira ||
+    !idAutorizador ||
+    !idSucursal ||
+    !idDepartamento
+  ) {
+    showToast("Completa todos los campos del retiro histórico.", "error");
+    return;
+  }
+  if (cantidad <= 0) {
+    showToast("La cantidad debe ser mayor a cero.", "error");
+    return;
+  }
+
+  const items = db("items");
+  const item = items.find((i) => i.id === codigoItem);
+  if (!item) {
+    showToast("Insumo no encontrado.", "error");
+    return;
+  }
+
+  // Calculate timestamp from the input
+  const timestamp = new Date(fechaInput).getTime();
+
+  const btnWd = document.getElementById("btn-confirm-historical");
+  setBtnLoading(btnWd, "Procesando...");
+
+  try {
+    // We explicitly DO NOT update stock here.
+    
+    // Add withdrawal record with the historical timestamp
+    const usuarios = db("usuarios");
+    const sucursales = db("sucursales");
+    const departamentos = db("departamentos");
+    const auth = usuarios.find((u) => u.id === idAutorizador);
+    const suc = sucursales.find((s) => s.id === idSucursal);
+    const dep = departamentos.find((d) => d.id === idDepartamento);
+
+    await fbAdd("retiros", {
+      fechaHora: timestamp,
+      codigoItem,
+      idAutorizador,
+      idSucursal,
+      idDepartamento,
+      cantidad,
+      entregaVacio,
+      itemNombre: itemLabel(item),
+      usuarioNombre: nombreRetira,
+      autorizadorNombre: auth?.nombre || "",
+      sucursalNombre: suc?.nombre || "",
+      departamentoNombre: dep?.nombre || "",
+    });
+
+    await refreshData();
+    showToast("Retiro histórico registrado exitosamente.");
+    closeModal("modal-historical-withdrawal");
+    navigateTo(currentPage);
+  } catch (error) {
+    console.error(error);
+    showToast("Error al registrar retiro histórico", "error");
   } finally {
     resetBtn(btnWd);
   }

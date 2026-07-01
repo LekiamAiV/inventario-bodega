@@ -457,6 +457,124 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════
+       HISTORICAL WITHDRAWAL MODAL
+  ═══════════════════════════════════════════════════════════════ -->
+  <div id="modal-historical-withdrawal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Ingresar Retiro Histórico</h2>
+        <p class="modal-description">Este registro se añadirá al historial <strong style="color:var(--destructive)">SIN afectar el stock actual</strong>.</p>
+      </div>
+      <div class="modal-body">
+        <div class="flex flex-col gap-4">
+          <!-- Fecha y Hora -->
+          <div class="flex flex-col gap-2">
+            <label class="label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground);"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+              Fecha y Hora (Pasada)
+            </label>
+            <input type="datetime-local" class="input" id="hwd-fecha" required>
+          </div>
+          <!-- Insumo -->
+          <div class="flex flex-col gap-2">
+            <label class="label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground);"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+              Insumo
+            </label>
+            <div class="select-wrapper">
+              <button type="button" class="select-trigger" id="hwd-item-trigger" data-value="">
+                <span class="select-placeholder">Selecciona un insumo</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="select-content" id="hwd-item-dropdown"></div>
+            </div>
+          </div>
+          <!-- Cantidad + Entrega vacío -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+              <label class="label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted-foreground);"><path d="M4 9V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M8 21h8"/><path d="M12 15v6"/><rect width="20" height="6" x="2" y="9" rx="2"/></svg>
+                Cantidad Retirada
+              </label>
+              <input type="number" min="1" value="1" class="input" id="hwd-cantidad">
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted-foreground);"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Entrega Vacío
+              </label>
+              <div class="select-wrapper">
+                <button type="button" class="select-trigger" id="hwd-vacio-trigger" data-value="no">
+                  <span>No</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="select-content" id="hwd-vacio-dropdown">
+                  <div class="select-item" data-value="si">Sí</div>
+                  <div class="select-item selected" data-value="no">No</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Nombre quien retira -->
+          <div class="flex flex-col gap-2">
+            <label class="label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted-foreground);"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+              Nombre quien retiró
+            </label>
+            <input class="input" placeholder="Nombre de quien retiró" id="hwd-nombre">
+          </div>
+          <!-- Autorizador -->
+          <div class="flex flex-col gap-2">
+            <label class="label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted-foreground);"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+              Quien autorizó
+            </label>
+            <div class="select-wrapper">
+              <button type="button" class="select-trigger" id="hwd-auth-trigger" data-value="">
+                <span class="select-placeholder">Selecciona autorizador</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="select-content" id="hwd-auth-dropdown"></div>
+            </div>
+          </div>
+          <!-- Sucursal -->
+          <div class="flex flex-col gap-2">
+            <label class="label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted-foreground);"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+              Sucursal
+            </label>
+            <div class="select-wrapper">
+              <button type="button" class="select-trigger" id="hwd-suc-trigger" data-value="">
+                <span class="select-placeholder">Selecciona una sucursal</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="select-content" id="hwd-suc-dropdown"></div>
+            </div>
+          </div>
+          <!-- Departamento -->
+          <div class="flex flex-col gap-2">
+            <label class="label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted-foreground);"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H14.76a2 2 0 0 1 1.74 1.01L18 14"/><path d="M6 14h12"/><rect width="20" height="8" x="2" y="14" rx="2"/><path d="M12 14v-4"/></svg>
+              Departamento
+            </label>
+            <div class="select-wrapper">
+              <button type="button" class="select-trigger" id="hwd-dep-trigger" data-value="">
+                <span class="select-placeholder">Selecciona un departamento</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="select-content" id="hwd-dep-dropdown"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-historical-withdrawal')">Cancelar</button>
+        <button class="btn btn-primary" id="btn-confirm-historical" onclick="confirmHistoricalWithdrawal()">Guardar Histórico</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
        NEW ITEM MODAL
   ═══════════════════════════════════════════════════════════════ -->
   <div id="modal-new-item" class="modal-overlay">
