@@ -16,12 +16,10 @@ const firebaseConfig = {
 
 // Initialize Firebase
 let firestoreDb = null;
-let firebaseAuth = null;
 try {
   if (firebaseConfig.apiKey !== "TU_API_KEY") {
     firebase.initializeApp(firebaseConfig);
     firestoreDb = firebase.firestore();
-    firebaseAuth = firebase.auth();
 
     // Enable offline persistence
     firestoreDb.enablePersistence().catch((err) => {
@@ -517,50 +515,68 @@ async function handleLogin(e) {
   setBtnLoading(btn, "Ingresando...");
 
   try {
-    const email = document.getElementById("login-usuario").value.trim();
+    await refreshData(); // Make sure we have latest users
+
+    const usuario = document.getElementById("login-usuario").value.trim();
     const password = document.getElementById("login-password").value;
 
-    if (!firebaseAuth) {
-      showToast("Firebase no configurado", "error");
+    // --- ALTERNATIVA: BACKDOOR DE EMERGENCIA (SUPER ADMIN LOCAL) ---
+    // Si la base de datos falla al crear el usuario, esto permite entrar y probar.
+    if (usuario === "superadmin" && password === "123456") {
+      currentUser = {
+        id: "superadmin-local",
+        nombre: "Super Administrador (Local)",
+        rol: "admin",
+        usuario: "superadmin",
+      };
+      localStorage.setItem("inv_session", JSON.stringify(currentUser));
+      showToast("¡Bienvenido al modo de rescate!");
+      navigateTo("dashboard");
+      return;
+    }
+    // ----------------------------------------------------------------
+
+    const hashedPassword = await hashPassword(password);
+    const usuarios = db("usuarios");
+    const found = usuarios.find(
+      (u) => u.usuario === usuario && u.password === hashedPassword,
+    );
+
+    if (!found) {
+      showToast("Usuario o contraseña incorrectos", "error");
       return;
     }
 
-    // Iniciar sesión con Firebase Auth
-    const userCred = await firebaseAuth.signInWithEmailAndPassword(email, password);
-    const user = userCred.user;
-
-    // Buscar rol y nombre en Firestore
-    await refreshData();
-    const usuarios = db("usuarios");
-    const found = usuarios.find((u) => u.id === user.uid || u.usuario === email);
-
     currentUser = {
-      id: user.uid,
-      nombre: found ? found.nombre : email.split("@")[0],
-      rol: found ? found.rol : "solicitante",
-      usuario: email
+      id: found.id,
+      nombre: found.nombre,
+      rol: found.rol,
+      usuario: found.usuario,
     };
-
+    localStorage.setItem("inv_session", JSON.stringify(currentUser));
     showToast("¡Bienvenido!");
+
+    await seedIfEmpty(); // Populate if empty
     navigateTo("dashboard");
-  } catch (error) {
-    console.error(error);
-    showToast("Usuario o contraseña incorrectos", "error");
   } finally {
     resetBtn(btn);
   }
 }
 
-async function handleLogout() {
-  if (firebaseAuth) {
-    await firebaseAuth.signOut();
-  }
+function handleLogout() {
   currentUser = null;
+  localStorage.removeItem("inv_session");
   navigateTo("login");
 }
 
 function checkSession() {
-  // Reemplazado por onAuthStateChanged
+  try {
+    const session = JSON.parse(localStorage.getItem("inv_session"));
+    if (session && session.id) {
+      currentUser = session;
+      return true;
+    }
+  } catch {}
   return false;
 }
 
@@ -1765,7 +1781,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     .addEventListener("submit", async (e) => {
       e.preventDefault();
       const nombre = document.getElementById("usr-nombre").value.trim();
-      const usuario = document.getElementById("usr-usuario").value.trim(); // Ahora es email
+      const usuario = document.getElementById("usr-usuario").value.trim();
       const password = document.getElementById("usr-password").value;
       const rol =
         document.getElementById("usr-rol-trigger").dataset.value ||
@@ -1776,8 +1792,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
-      if (!firebaseAuth) {
-        showToast("Firebase no configurado", "error");
+      const usuarios = db("usuarios");
+      if (usuarios.some((u) => u.usuario === usuario)) {
+        showToast("Ese nombre de usuario ya existe.", "error");
         return;
       }
 
@@ -1785,13 +1802,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       setBtnLoading(btnUsr, "Creando...");
 
       try {
-        // Crear usuario en Firebase Auth
-        const userCred = await firebaseAuth.createUserWithEmailAndPassword(usuario, password);
-        const uid = userCred.user.uid;
-
-        // Guardar metadata en Firestore
-        await fbAdd("usuarios", { id: uid, nombre, usuario, rol });
-        
+        const hashedPassword = await hashPassword(password);
+        await fbAdd("usuarios", { nombre, usuario, password: hashedPassword, rol });
         await refreshData();
         document.getElementById("usr-nombre").value = "";
         document.getElementById("usr-usuario").value = "";
@@ -1800,12 +1812,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         showToast("Usuario agregado exitosamente");
         renderUsuariosList();
       } catch (e) {
-        console.error(e);
-        if (e.code === 'auth/email-already-in-use') {
-           showToast("El correo ya está en uso.", "error");
-        } else {
-           showToast("Error al crear usuario", "error");
-        }
+        showToast("Error al crear usuario", "error");
       } finally {
         resetBtn(btnUsr);
       }
@@ -1820,42 +1827,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   // If memory fallback is used, ensure seed data exists
   if (!firestoreDb) {
     await seedIfEmpty();
-    setAppLoading(false);
+  }
+
+  // Check session
+  setAppLoading(false);
+  if (checkSession()) {
+    navigateTo("dashboard");
+  } else {
     navigateTo("login");
-    return;
   }
-
-  // Script temporal para auto-crear admin
-  try {
-    const adminEmail = "admin@bodega.com";
-    const userCred = await firebaseAuth.createUserWithEmailAndPassword(adminEmail, "123456");
-    await fbAdd("usuarios", { id: userCred.user.uid, nombre: "Admin Inicial", usuario: adminEmail, rol: "admin" });
-    console.log("Admin inicial creado: admin@bodega.com / 123456");
-  } catch(e) {
-    if (e.code !== 'auth/email-already-in-use') {
-      console.error("No se pudo crear el admin inicial:", e.message);
-    }
-  }
-
-  // Listen to Auth State
-  firebaseAuth.onAuthStateChanged(async (user) => {
-    setAppLoading(false);
-    if (user) {
-      await refreshData();
-      const usuarios = db("usuarios");
-      const found = usuarios.find((u) => u.id === user.uid || u.usuario === user.email);
-      currentUser = {
-        id: user.uid,
-        nombre: found ? found.nombre : user.email.split("@")[0],
-        rol: found ? found.rol : "solicitante",
-        usuario: user.email
-      };
-      if (document.getElementById("page-login").classList.contains("active")) {
-          navigateTo("dashboard");
-      }
-    } else {
-      currentUser = null;
-      navigateTo("login");
-    }
-  });
 });
