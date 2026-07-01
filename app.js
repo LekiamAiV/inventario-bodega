@@ -640,6 +640,8 @@ const ICONS = {
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
   calendar:
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  plus:
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
 };
 
 function sortIcon(state, col) {
@@ -1428,32 +1430,34 @@ function openHistoricalWithdrawalDialog() {
 
   populateSelect(
     "hwd-item-dropdown",
-    "hwd-item-trigger",
     items,
+    (i) => i.id,
     (i) => itemLabel(i),
-    true,
   );
   populateSelect(
     "hwd-auth-dropdown",
-    "hwd-auth-trigger",
     usuarios,
+    (u) => u.id,
     (u) => u.nombre,
-    true,
   );
   populateSelect(
     "hwd-suc-dropdown",
-    "hwd-suc-trigger",
     sucursales,
+    (s) => s.id,
     (s) => s.nombre,
-    true,
   );
   populateSelect(
     "hwd-dep-dropdown",
-    "hwd-dep-trigger",
     departamentos,
+    (d) => d.id,
     (d) => d.nombre,
-    true,
   );
+
+  resetSelect("hwd-item-trigger", "Selecciona un insumo");
+  resetSelect("hwd-auth-trigger", "Selecciona autorizador");
+  resetSelect("hwd-suc-trigger", "Selecciona una sucursal");
+  resetSelect("hwd-dep-trigger", "Selecciona un departamento");
+  setSelectValue("hwd-vacio-trigger", "hwd-vacio-dropdown", "no");
 
   initSelect("hwd-item-trigger", "hwd-item-dropdown");
   initSelect("hwd-auth-trigger", "hwd-auth-dropdown");
