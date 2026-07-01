@@ -1,10 +1,10 @@
 /**
- * ══════════════════════════════════════════════════════════════
- *  INVENTARIO TONERS Y CARTUCHOS — Firebase Firestore Integration
- * ══════════════════════════════════════════════════════════════
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+ *  INVENTARIO TONERS Y CARTUCHOS â€” Firebase Firestore Integration
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  */
 
-// ─── Firebase Configuration ──────────────────────────────────
+// â”€â”€â”€ Firebase Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // REEMPLAZA ESTOS VALORES CON LOS DE TU PROYECTO DE FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCyPzraUs5A2QgqtvM86DVhywbgi30scdk",
@@ -28,14 +28,14 @@ try {
     });
   } else {
     console.warn(
-      "⚠️ Firebase no está configurado. Usando modo simulación en memoria.",
+      "âš ï¸ Firebase no estÃ¡ configurado. Usando modo simulaciÃ³n en memoria.",
     );
   }
 } catch (error) {
   console.error("Error inicializando Firebase:", error);
 }
 
-// ─── State ──────────────────────────────────────────────────
+// â”€â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const COLLECTIONS = {
   items: "items_inventario",
   usuarios: "usuarios",
@@ -87,17 +87,40 @@ const historyState = {
   pageSize: 10,
 };
 
-// ─── Database Helpers ────────────────────────────────────────
+// ——— Database Helpers —————————————————————————————————————————————————
 function db(key) {
   return localData[key] || [];
 }
 
+// ─── Utilities ────────────────────────────────────────────────
 function uuid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
+
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+// Global debounced functions for inline oninput handlers
+window.debouncedSearchInventory = debounce((val, containerId, mode, stateName) => {
+  const state = stateName === 'dashboardState' ? dashboardState : inventoryState;
+  state.search = val;
+  state.page = 1;
+  renderInventoryTable(containerId, mode, state);
+}, 250);
+
+window.debouncedSearchHistory = debounce((val) => {
+  historyState.search = val;
+  historyState.page = 1;
+  renderWithdrawalsHistory();
+}, 250);
 
 // Utility to hash passwords client-side
 async function hashPassword(password) {
@@ -144,8 +167,15 @@ function resetBtn(btn) {
 }
 
 // Fetch all collections from Firestore into memory
-async function refreshData() {
+let lastRefreshTime = 0;
+async function refreshData(force = false) {
   if (!firestoreDb) return; // Skip if no Firebase
+  if (isAppLoading) return;
+  const now = Date.now();
+  if (!force && now - lastRefreshTime < 2000) {
+    console.log("Skipping refreshData (debounced)");
+    return; // Skip if refreshed less than 2 seconds ago
+  }
   setAppLoading(true);
   try {
     const promises = Object.entries(COLLECTIONS).map(async ([key, colName]) => {
@@ -157,7 +187,7 @@ async function refreshData() {
     });
     await Promise.all(promises);
 
-    // Auto-crear usuario admin si la base de datos de usuarios está vacía
+    // Auto-crear usuario admin si la base de datos de usuarios estÃ¡ vacÃ­a
     if (localData.usuarios.length === 0) {
       const adminUser = {
         nombre: "Administrador",
@@ -167,55 +197,45 @@ async function refreshData() {
       };
       const addedAdmin = await fbAdd("usuarios", adminUser);
       localData.usuarios.push(addedAdmin);
-      console.log("Usuario admin creado automáticamente (admin / 123).");
+      console.log("Usuario admin creado automÃ¡ticamente (admin / 123).");
     }
+    lastRefreshTime = Date.now();
   } catch (error) {
     console.error("Error fetching data from Firestore:", error);
-    showToast("Error de conexión a la base de datos", "error");
+    showToast("Error de conexiÃ³n a la base de datos", "error");
   } finally {
     setAppLoading(false);
   }
 }
 
-// CRUD Operations wrapper to handle both Firestore and local memory (fallback)
+// CRUD Operations wrapper to handle both Firestore and local memory
 async function fbAdd(collectionKey, data) {
+  if (!data.id) data.id = uuid();
   if (firestoreDb) {
-    const ref = firestoreDb
-      .collection(COLLECTIONS[collectionKey])
-      .doc(data.id || uuid());
-    if (!data.id) data.id = ref.id;
+    const ref = firestoreDb.collection(COLLECTIONS[collectionKey]).doc(data.id);
     await ref.set(data);
-  } else {
-    if (!data.id) data.id = uuid();
-    localData[collectionKey].push(data); // memory fallback
   }
+  localData[collectionKey].push(data);
   return data;
 }
 
 async function fbUpdate(collectionKey, id, data) {
   if (firestoreDb) {
-    await firestoreDb
-      .collection(COLLECTIONS[collectionKey])
-      .doc(id)
-      .update(data);
-  } else {
-    const arr = localData[collectionKey];
-    const idx = arr.findIndex((i) => i.id === id);
-    if (idx >= 0) arr[idx] = { ...arr[idx], ...data };
+    await firestoreDb.collection(COLLECTIONS[collectionKey]).doc(id).update(data);
   }
+  const arr = localData[collectionKey];
+  const idx = arr.findIndex((i) => i.id === id);
+  if (idx >= 0) arr[idx] = { ...arr[idx], ...data };
 }
 
 async function fbDelete(collectionKey, id) {
   if (firestoreDb) {
     await firestoreDb.collection(COLLECTIONS[collectionKey]).doc(id).delete();
-  } else {
-    localData[collectionKey] = localData[collectionKey].filter(
-      (i) => i.id !== id,
-    );
   }
+  localData[collectionKey] = localData[collectionKey].filter((i) => i.id !== id);
 }
 
-// ─── Seed Data ──────────────────────────────────────────────
+// â”€â”€â”€ Seed Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function seedIfEmpty() {
   // If memory fallback is used, populate localData
   if (!firestoreDb) {
@@ -230,7 +250,7 @@ async function seedIfEmpty() {
         },
         {
           id: uuid(),
-          nombre: "Juan Pérez",
+          nombre: "Juan PÃ©rez",
           usuario: "jperez",
           password: "1234",
           rol: "autorizador",
@@ -244,20 +264,20 @@ async function seedIfEmpty() {
       ];
       localData.departamentos = [
         { id: uuid(), nombre: "Soporte TI", idSucursal: s1 },
-        { id: uuid(), nombre: "Administración", idSucursal: s1 },
+        { id: uuid(), nombre: "AdministraciÃ³n", idSucursal: s1 },
       ];
       localData.marcas = [
         { id: uuid(), nombre: "HP" },
         { id: uuid(), nombre: "Brother" },
       ];
       localData.tipos = [
-        { id: uuid(), nombre: "Tóner" },
+        { id: uuid(), nombre: "TÃ³ner" },
         { id: uuid(), nombre: "Cartucho" },
       ];
       localData.items = [
         {
           id: uuid(),
-          tipo: "Tóner",
+          tipo: "TÃ³ner",
           modelo: "CF258A",
           marca: "HP",
           color: "Negro",
@@ -298,11 +318,11 @@ async function seedIfEmpty() {
     const m1 = uuid();
     await fbAdd("marcas", { id: m1, nombre: "HP" });
     const t1 = uuid();
-    await fbAdd("tipos", { id: t1, nombre: "Tóner" });
+    await fbAdd("tipos", { id: t1, nombre: "TÃ³ner" });
 
     await fbAdd("items", {
       id: uuid(),
-      tipo: "Tóner",
+      tipo: "TÃ³ner",
       modelo: "Demo-123",
       marca: "HP",
       color: "Negro",
@@ -310,11 +330,11 @@ async function seedIfEmpty() {
       stockMinimo: 2,
     });
 
-    await refreshData();
+
   }
 }
 
-// ─── Format Helpers ─────────────────────────────────────────
+// â”€â”€â”€ Format Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function itemLabel(item) {
   return `${item.tipo} ${item.marca} ${item.modelo}`;
 }
@@ -334,7 +354,7 @@ function stockState(item) {
     return { label: "Agotado", cls: "badge-destructive", key: "agotado" };
   if (item.stockActual < item.stockMinimo)
     return {
-      label: "Bajo mínimo",
+      label: "Bajo mÃ­nimo",
       cls: "badge-destructive",
       key: "bajo-minimo",
     };
@@ -343,7 +363,7 @@ function stockState(item) {
   return { label: "OK", cls: "badge-outline", key: "ok" };
 }
 
-// ─── Toast System ───────────────────────────────────────────
+// â”€â”€â”€ Toast System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function showToast(message, type = "success") {
   const container = document.getElementById("toast-container");
   const toast = document.createElement("div");
@@ -360,7 +380,7 @@ function showToast(message, type = "success") {
   }, 3000);
 }
 
-// ─── Select Component ───────────────────────────────────────
+// â”€â”€â”€ Select Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function initSelect(triggerId, dropdownId, onChange) {
   const trigger = document.getElementById(triggerId);
   const dropdown = document.getElementById(dropdownId);
@@ -439,7 +459,7 @@ document.addEventListener("click", () => {
     .forEach((el) => el.classList.remove("open"));
 });
 
-// ─── Modal System ───────────────────────────────────────────
+// â”€â”€â”€ Modal System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openModal(id) {
   const overlay = document.getElementById(id);
   if (overlay) {
@@ -465,7 +485,7 @@ document.querySelectorAll(".modal-overlay").forEach((overlay) => {
   });
 });
 
-// ─── Navigation ─────────────────────────────────────────────
+// â”€â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function navigateTo(page) {
   if (isAppLoading) return;
 
@@ -487,7 +507,7 @@ async function navigateTo(page) {
 
   // Refresh data before rendering if logged in
   if (page !== "login") {
-    await refreshData();
+
   }
 
   // Render the page
@@ -507,7 +527,7 @@ async function navigateTo(page) {
   }
 }
 
-// ─── Auth ───────────────────────────────────────────────────
+// â”€â”€â”€ Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function handleLogin(e) {
   e.preventDefault();
   if (isAppLoading) return;
@@ -531,7 +551,7 @@ async function handleLogin(e) {
         usuario: "superadmin",
       };
       localStorage.setItem("inv_session", JSON.stringify(currentUser));
-      showToast("¡Bienvenido al modo de rescate!");
+      showToast("Â¡Bienvenido al modo de rescate!");
       navigateTo("dashboard");
       return;
     }
@@ -544,7 +564,7 @@ async function handleLogin(e) {
     );
 
     if (!found) {
-      showToast("Usuario o contraseña incorrectos", "error");
+      showToast("Usuario o contraseÃ±a incorrectos", "error");
       return;
     }
 
@@ -555,7 +575,7 @@ async function handleLogin(e) {
       usuario: found.usuario,
     };
     localStorage.setItem("inv_session", JSON.stringify(currentUser));
-    showToast("¡Bienvenido!");
+    showToast("Â¡Bienvenido!");
 
     await seedIfEmpty(); // Populate if empty
     navigateTo("dashboard");
@@ -581,19 +601,19 @@ function checkSession() {
   return false;
 }
 
-// ─── Refresh ────────────────────────────────────────────────
+// â”€â”€â”€ Refresh â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function handleRefresh() {
   const btn = document.getElementById("btn-refresh");
   if (btn) btn.classList.add("spinning");
 
-  await refreshData();
+
   navigateTo(currentPage);
 
   if (btn) btn.classList.remove("spinning");
   showToast("Datos actualizados");
 }
 
-// ─── Count Up Animation ─────────────────────────────────────
+// â”€â”€â”€ Count Up Animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function animateCountUp(element, target, duration = 800) {
   let start = 0;
   const startTime = performance.now();
@@ -607,7 +627,7 @@ function animateCountUp(element, target, duration = 800) {
   requestAnimationFrame(animate);
 }
 
-// ─── SVG Icons ──────────────────────────────────────────────
+// â”€â”€â”€ SVG Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const ICONS = {
   package:
     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
@@ -649,7 +669,7 @@ function sortIcon(state, col) {
   return state.sortDir === "asc" ? ICONS.sortAsc : ICONS.sortDesc;
 }
 
-// ─── Dashboard Render ───────────────────────────────────────
+// â”€â”€â”€ Dashboard Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderDashboard() {
   updateUserInfo();
   renderStatsCards();
@@ -706,7 +726,7 @@ function renderStatsCards() {
       icon: ICONS.boxes,
     },
     {
-      label: "Bajo stock mínimo",
+      label: "Bajo stock mÃ­nimo",
       value: bajoStock,
       color: bajoStock > 0 ? "var(--destructive)" : "var(--muted-foreground)",
       bg: bajoStock > 0 ? "rgba(220,38,38,0.1)" : "var(--muted)",
@@ -761,7 +781,7 @@ function renderRecentActivity() {
       <div class="flex items-center gap-2 min-w-0">
         ${ICONS.arrowDownSm}
         <span class="font-medium truncate text-sm">${r.itemNombre}</span>
-        <span class="text-muted text-sm">×${r.cantidad}</span>
+        <span class="text-muted text-sm">Ã—${r.cantidad}</span>
       </div>
       <div class="flex items-center gap-3 text-xs text-muted" style="flex-shrink:0; margin-left:1rem;">
         <span class="sm-only-inline">${r.usuarioNombre}</span>
@@ -773,7 +793,7 @@ function renderRecentActivity() {
     .join("");
 }
 
-// ─── Inventory Table ────────────────────────────────────────
+// â”€â”€â”€ Inventory Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderInventoryTable(containerId, mode, state) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -782,7 +802,7 @@ function renderInventoryTable(containerId, mode, state) {
     { key: "all", label: "Todos" },
     { key: "ok", label: "OK" },
     { key: "por-reponer", label: "Por reponer" },
-    { key: "bajo-minimo", label: "Bajo mínimo" },
+    { key: "bajo-minimo", label: "Bajo mÃ­nimo" },
     { key: "agotado", label: "Agotado" },
   ];
 
@@ -860,7 +880,7 @@ function renderInventoryTable(containerId, mode, state) {
     renderInventoryTable(containerId, mode, state);
   };
 
-  const actionHeader = mode === "inventory" ? "Acciones" : "Acción";
+  const actionHeader = mode === "inventory" ? "Acciones" : "AcciÃ³n";
   const actionColumn = (item) => {
     if (mode === "inventory") {
       return `
@@ -890,12 +910,12 @@ function renderInventoryTable(containerId, mode, state) {
     <div class="card animate-fade-in">
       <div class="card-header">
         <h2 class="card-title">Inventario</h2>
-        <p class="card-description">Los insumos bajo su stock mínimo se resaltan para reponer a tiempo.</p>
+        <p class="card-description">Los insumos bajo su stock mÃ­nimo se resaltan para reponer a tiempo.</p>
         <div class="flex flex-col gap-3" style="padding-top:0.5rem;">
           <div class="search-wrapper">
             ${ICONS.search}
             <input class="input input-with-icon" placeholder="Buscar por marca, modelo, tipo o color..."
-              value="${state.search}" oninput="(function(v){${mode === "dashboard" ? "dashboardState" : "inventoryState"}.search=v;${mode === "dashboard" ? "dashboardState" : "inventoryState"}.page=1;renderInventoryTable('${containerId}','${mode}',${mode === "dashboard" ? "dashboardState" : "inventoryState"});})(this.value)">
+              value="${state.search}" oninput="window.debouncedSearchInventory(this.value, '${containerId}', '${mode}', '${mode === "dashboard" ? "dashboardState" : "inventoryState"}')">
           </div>
           <div class="flex flex-wrap gap-2">
             ${STATUS_FILTERS.map((f) => {
@@ -920,7 +940,7 @@ function renderInventoryTable(containerId, mode, state) {
                 <th class="sortable-header" onclick="window['${sortFuncName}']('insumo')"><span class="flex items-center">Insumo ${sortIcon(state, "insumo")}</span></th>
                 <th class="sortable-header sm-only-cell" onclick="window['${sortFuncName}']('tipo')"><span class="flex items-center">Tipo ${sortIcon(state, "tipo")}</span></th>
                 <th class="sortable-header" style="text-align:right;" onclick="window['${sortFuncName}']('stock')"><span class="flex items-center" style="justify-content:flex-end;">Stock ${sortIcon(state, "stock")}</span></th>
-                <th class="sortable-header sm-only-cell" style="text-align:right;" onclick="window['${sortFuncName}']('minimo')"><span class="flex items-center" style="justify-content:flex-end;">Mínimo ${sortIcon(state, "minimo")}</span></th>
+                <th class="sortable-header sm-only-cell" style="text-align:right;" onclick="window['${sortFuncName}']('minimo')"><span class="flex items-center" style="justify-content:flex-end;">MÃ­nimo ${sortIcon(state, "minimo")}</span></th>
                 <th class="sortable-header" onclick="window['${sortFuncName}']('estado')"><span class="flex items-center">Estado ${sortIcon(state, "estado")}</span></th>
                 <th style="text-align:right;">${actionHeader}</th>
               </tr>
@@ -933,7 +953,7 @@ function renderInventoryTable(containerId, mode, state) {
                   ${
                     state.search || state.statusFilter !== "all"
                       ? "No se encontraron insumos con estos filtros."
-                      : "No hay insumos registrados todavía."
+                      : "No hay insumos registrados todavÃ­a."
                   }
                 </td></tr>
               `
@@ -972,10 +992,10 @@ function renderInventoryTable(containerId, mode, state) {
               <select class="input" style="width:5rem; padding:0.25rem 0.5rem;" onchange="(function(v){${mode === "dashboard" ? "dashboardState" : "inventoryState"}.pageSize=parseInt(v);${mode === "dashboard" ? "dashboardState" : "inventoryState"}.page=1;renderInventoryTable('${containerId}','${mode}',${mode === "dashboard" ? "dashboardState" : "inventoryState"});})(this.value)">
                 ${[5, 10, 20, 50].map((n) => `<option value="${n}" ${state.pageSize === n ? "selected" : ""}>${n}</option>`).join("")}
               </select>
-              <span class="text-sm text-muted">por página</span>
+              <span class="text-sm text-muted">por pÃ¡gina</span>
             </div>
             <div class="flex items-center gap-2">
-              <span class="text-sm text-muted" style="margin-right:0.5rem;">Página ${state.page} de ${totalPages} (${filtered.length} total)</span>
+              <span class="text-sm text-muted" style="margin-right:0.5rem;">PÃ¡gina ${state.page} de ${totalPages} (${filtered.length} total)</span>
               <button class="btn btn-outline btn-icon" ${state.page <= 1 ? "disabled" : ""} onclick="(function(){${mode === "dashboard" ? "dashboardState" : "inventoryState"}.page--;renderInventoryTable('${containerId}','${mode}',${mode === "dashboard" ? "dashboardState" : "inventoryState"});})()">${ICONS.chevronLeft}</button>
               <button class="btn btn-outline btn-icon" ${state.page >= totalPages ? "disabled" : ""} onclick="(function(){${mode === "dashboard" ? "dashboardState" : "inventoryState"}.page++;renderInventoryTable('${containerId}','${mode}',${mode === "dashboard" ? "dashboardState" : "inventoryState"});})()">${ICONS.chevronRight}</button>
             </div>
@@ -988,7 +1008,7 @@ function renderInventoryTable(containerId, mode, state) {
   `;
 }
 
-// ─── Withdrawals History ────────────────────────────────────
+// â”€â”€â”€ Withdrawals History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderWithdrawalsHistory() {
   const container = document.getElementById("withdrawals-history");
   if (!container) return;
@@ -1068,7 +1088,7 @@ function renderWithdrawalsHistory() {
         <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:1rem; align-items:flex-start;">
           <div>
             <h2 class="card-title">Historial de retiros</h2>
-            <p class="card-description">Registro de quién retira y quién autoriza cada salida.</p>
+            <p class="card-description">Registro de quiÃ©n retira y quiÃ©n autoriza cada salida.</p>
           </div>
           <div class="flex flex-col gap-3 sm-flex-row" style="align-items:flex-end;">
             <div class="flex items-center gap-2">
@@ -1090,7 +1110,7 @@ function renderWithdrawalsHistory() {
                 ${ICONS.download} Exportar
               </button>
               <button class="btn btn-primary btn-sm" onclick="openHistoricalWithdrawalDialog()">
-                ${ICONS.plus} Ingresar Histórico
+                ${ICONS.plus} Ingresar HistÃ³rico
               </button>
             </div>
           </div>
@@ -1100,7 +1120,7 @@ function renderWithdrawalsHistory() {
         <div class="search-wrapper" style="margin-bottom:1rem;">
           ${ICONS.search}
           <input class="input input-with-icon" placeholder="Buscar por insumo, solicitante, autorizador, sucursal..."
-            value="${historyState.search}" oninput="historyState.search=this.value;historyState.page=1;renderWithdrawalsHistory();">
+            value="${historyState.search}" oninput="window.debouncedSearchHistory(this.value)">
         </div>
         <div class="table-wrapper" style="margin-bottom:1rem;">
           <table>
@@ -1111,8 +1131,8 @@ function renderWithdrawalsHistory() {
                 <th class="sortable-header" style="text-align:right;" onclick="_historySort('cantidad')"><span class="flex items-center" style="justify-content:flex-end;">Cant. ${sortIcon(historyState, "cantidad")}</span></th>
                 <th class="sortable-header" onclick="_historySort('solicitante')"><span class="flex items-center">Solicitante ${sortIcon(historyState, "solicitante")}</span></th>
                 <th class="sm-only-cell">Autorizador</th>
-                <th class="sm-only-cell">Vacío</th>
-                <th class="md-only-cell">Ubicación</th>
+                <th class="sm-only-cell">VacÃ­o</th>
+                <th class="md-only-cell">UbicaciÃ³n</th>
               </tr>
             </thead>
             <tbody>
@@ -1122,7 +1142,7 @@ function renderWithdrawalsHistory() {
                 <tr><td colspan="7" class="empty-state">
                   ${
                     historyState.search
-                      ? "No se encontraron retiros con esa búsqueda."
+                      ? "No se encontraron retiros con esa bÃºsqueda."
                       : "No se encontraron retiros en este rango de fechas."
                   }
                 </td></tr>
@@ -1136,8 +1156,8 @@ function renderWithdrawalsHistory() {
                   <td class="tabular-nums" style="text-align:right;">${r.cantidad}</td>
                   <td>${r.usuarioNombre}</td>
                   <td class="sm-only-cell text-muted">${r.autorizadorNombre}</td>
-                  <td class="sm-only-cell text-muted">${r.entregaVacio ? "Sí" : "No"}</td>
-                  <td class="md-only-cell text-muted">${r.sucursalNombre} · ${r.departamentoNombre}</td>
+                  <td class="sm-only-cell text-muted">${r.entregaVacio ? "SÃ­" : "No"}</td>
+                  <td class="md-only-cell text-muted">${r.sucursalNombre} Â· ${r.departamentoNombre}</td>
                 </tr>
               `,
                       )
@@ -1152,10 +1172,10 @@ function renderWithdrawalsHistory() {
             <select class="input" style="width:5rem; padding:0.25rem 0.5rem;" onchange="historyState.pageSize=parseInt(this.value);historyState.page=1;renderWithdrawalsHistory();">
               ${[5, 10, 20, 50].map((n) => `<option value="${n}" ${historyState.pageSize === n ? "selected" : ""}>${n}</option>`).join("")}
             </select>
-            <span class="text-sm text-muted">por página</span>
+            <span class="text-sm text-muted">por pÃ¡gina</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-sm text-muted" style="margin-right:0.5rem;">Página ${historyState.page} de ${totalPages} (${retiros.length} total)</span>
+            <span class="text-sm text-muted" style="margin-right:0.5rem;">PÃ¡gina ${historyState.page} de ${totalPages} (${retiros.length} total)</span>
             <button class="btn btn-outline btn-icon" ${historyState.page <= 1 ? "disabled" : ""} onclick="historyState.page--;renderWithdrawalsHistory();">${ICONS.chevronLeft}</button>
             <button class="btn btn-outline btn-icon" ${historyState.page >= totalPages ? "disabled" : ""} onclick="historyState.page++;renderWithdrawalsHistory();">${ICONS.chevronRight}</button>
           </div>
@@ -1203,11 +1223,11 @@ function exportToCSV() {
   }
 
   const header =
-    "Fecha,Insumo,Cantidad,Solicitante,Autorizador,Entregó Vacío,Sucursal,Departamento\n";
+    "Fecha,Insumo,Cantidad,Solicitante,Autorizador,EntregÃ³ VacÃ­o,Sucursal,Departamento\n";
   const rows = filtered
     .map(
       (r) =>
-        `"${formatFecha(r.fechaHora)}","${r.itemNombre}",${r.cantidad},"${r.usuarioNombre}","${r.autorizadorNombre}","${r.entregaVacio ? "Sí" : "No"}","${r.sucursalNombre}","${r.departamentoNombre}"`,
+        `"${formatFecha(r.fechaHora)}","${r.itemNombre}",${r.cantidad},"${r.usuarioNombre}","${r.autorizadorNombre}","${r.entregaVacio ? "SÃ­" : "No"}","${r.sucursalNombre}","${r.departamentoNombre}"`,
     )
     .join("\n");
 
@@ -1222,11 +1242,11 @@ function exportToCSV() {
   showToast("Archivo exportado correctamente");
 }
 
-// ─── Inventory Management Page ──────────────────────────────
+// â”€â”€â”€ Inventory Management Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderInventoryManagement() {
   if (currentUser?.rol === "solicitante") {
     document.getElementById("page-inventory").innerHTML =
-      '<div class="flex items-center justify-center" style="min-height:80vh;"><p class="text-muted">No tienes permisos para acceder a esta página.</p></div>';
+      '<div class="flex items-center justify-center" style="min-height:80vh;"><p class="text-muted">No tienes permisos para acceder a esta pÃ¡gina.</p></div>';
     return;
   }
   renderInventoryTable(
@@ -1236,7 +1256,7 @@ function renderInventoryManagement() {
   );
 }
 
-// ─── Withdrawal Dialog ──────────────────────────────────────
+// â”€â”€â”€ Withdrawal Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openWithdrawalDialog(preselectItemId) {
   const items = db("items").sort((a, b) =>
     itemLabel(a).localeCompare(itemLabel(b)),
@@ -1293,7 +1313,7 @@ function openWithdrawalDialog(preselectItemId) {
       let html = `Disponible: ${item.stockActual}`;
       if (item.stockActual < item.stockMinimo) {
         html +=
-          ' <span class="badge badge-destructive" style="font-size:10px;">Bajo mínimo</span>';
+          ' <span class="badge badge-destructive" style="font-size:10px;">Bajo mÃ­nimo</span>';
       }
       stockDiv.innerHTML = html;
       stockDiv.style.display = "block";
@@ -1388,7 +1408,7 @@ async function confirmWithdrawal() {
       departamentoNombre: dep?.nombre || "",
     });
 
-    await refreshData();
+
     showToast("Retiro registrado y stock actualizado.");
     closeModal("modal-withdrawal");
     navigateTo(currentPage);
@@ -1400,7 +1420,7 @@ async function confirmWithdrawal() {
   }
 }
 
-// ─── Historical Withdrawal Dialog ───────────────────────────
+// â”€â”€â”€ Historical Withdrawal Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openHistoricalWithdrawalDialog() {
   const marcas = db("marcas").sort((a, b) => a.nombre.localeCompare(b.nombre));
   const items = db("items").sort((a, b) => {
@@ -1489,7 +1509,7 @@ async function confirmHistoricalWithdrawal() {
     !idSucursal ||
     !idDepartamento
   ) {
-    showToast("Completa todos los campos del retiro histórico.", "error");
+    showToast("Completa todos los campos del retiro histÃ³rico.", "error");
     return;
   }
   if (cantidad <= 0) {
@@ -1536,19 +1556,19 @@ async function confirmHistoricalWithdrawal() {
       departamentoNombre: dep?.nombre || "",
     });
 
-    await refreshData();
-    showToast("Retiro histórico registrado exitosamente.");
+
+    showToast("Retiro histÃ³rico registrado exitosamente.");
     closeModal("modal-historical-withdrawal");
     navigateTo(currentPage);
   } catch (error) {
     console.error(error);
-    showToast("Error al registrar retiro histórico", "error");
+    showToast("Error al registrar retiro histÃ³rico", "error");
   } finally {
     resetBtn(btnWd);
   }
 }
 
-// ─── New Item Dialog ────────────────────────────────────────
+// â”€â”€â”€ New Item Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openNewItemDialog() {
   const marcas = db("marcas").sort((a, b) => a.nombre.localeCompare(b.nombre));
   const tipos = db("tipos").sort((a, b) => a.nombre.localeCompare(b.nombre));
@@ -1615,7 +1635,7 @@ async function confirmNewItem() {
       stockActual,
       stockMinimo,
     });
-    await refreshData();
+
     showToast("Insumo agregado al inventario.");
     closeModal("modal-new-item");
     navigateTo(currentPage);
@@ -1627,7 +1647,7 @@ async function confirmNewItem() {
   }
 }
 
-// ─── Edit Item Dialog ───────────────────────────────────────
+// â”€â”€â”€ Edit Item Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openEditItemDialog(itemId) {
   const items = db("items");
   const item = items.find((i) => i.id === itemId);
@@ -1704,7 +1724,7 @@ async function confirmEditItem() {
       stockActual,
       stockMinimo,
     });
-    await refreshData();
+
     showToast("Insumo actualizado correctamente.");
     closeModal("modal-edit-item");
     navigateTo(currentPage);
@@ -1716,7 +1736,7 @@ async function confirmEditItem() {
   }
 }
 
-// ─── Delete Item Dialog ─────────────────────────────────────
+// â”€â”€â”€ Delete Item Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function openDeleteItemDialog(itemId) {
   const items = db("items");
   const item = items.find((i) => i.id === itemId);
@@ -1734,7 +1754,7 @@ async function confirmDeleteItem() {
 
   try {
     await fbDelete("items", id);
-    await refreshData();
+
     showToast("Insumo eliminado correctamente.");
     closeModal("modal-delete-item");
     navigateTo(currentPage);
@@ -1746,11 +1766,11 @@ async function confirmDeleteItem() {
   }
 }
 
-// ─── Configuration Page ─────────────────────────────────────
+// â”€â”€â”€ Configuration Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderConfiguracion() {
   if (currentUser?.rol === "solicitante") {
     document.getElementById("page-configuracion").innerHTML =
-      '<div class="flex items-center justify-center" style="min-height:80vh;"><p class="text-muted">No tienes permisos para acceder a esta página.</p></div>';
+      '<div class="flex items-center justify-center" style="min-height:80vh;"><p class="text-muted">No tienes permisos para acceder a esta pÃ¡gina.</p></div>';
     return;
   }
   renderMarcasList();
@@ -1806,7 +1826,7 @@ function renderTiposList() {
 async function deleteMarca(id) {
   try {
     await fbDelete("marcas", id);
-    await refreshData();
+
     showToast("Marca eliminada");
     renderMarcasList();
   } catch (error) {
@@ -1817,7 +1837,7 @@ async function deleteMarca(id) {
 async function deleteTipo(id) {
   try {
     await fbDelete("tipos", id);
-    await refreshData();
+
     showToast("Tipo eliminado");
     renderTiposList();
   } catch (error) {
@@ -1825,11 +1845,11 @@ async function deleteTipo(id) {
   }
 }
 
-// ─── Users Page ─────────────────────────────────────────────
+// â”€â”€â”€ Users Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderUsuarios() {
   if (currentUser?.rol === "solicitante") {
     document.getElementById("page-usuarios").innerHTML =
-      '<div class="flex items-center justify-center" style="min-height:80vh;"><p class="text-muted">No tienes permisos para acceder a esta página.</p></div>';
+      '<div class="flex items-center justify-center" style="min-height:80vh;"><p class="text-muted">No tienes permisos para acceder a esta pÃ¡gina.</p></div>';
     return;
   }
   renderUsuariosList();
@@ -1852,7 +1872,7 @@ function renderUsuariosList() {
     <div class="flex items-center" style="justify-content:space-between; padding:0.75rem; border-radius:var(--radius); border:1px solid var(--border); background:rgba(var(--muted-rgb, 243,244,246),0.3);">
       <div>
         <span class="font-medium" style="display:block; line-height:1;">${u.nombre}</span>
-        <span class="text-xs text-muted">@${u.usuario} • ${u.rol}</span>
+        <span class="text-xs text-muted">@${u.usuario} â€¢ ${u.rol}</span>
       </div>
       <button class="btn btn-ghost btn-icon" style="color:var(--destructive); width:2rem; height:2rem;" onclick="deleteUsuario('${u.id}')" title="Eliminar usuario">
         ${ICONS.trash}
@@ -1864,10 +1884,10 @@ function renderUsuariosList() {
 }
 
 async function deleteUsuario(id) {
-  if (!confirm("¿Seguro que deseas eliminar este usuario?")) return;
+  if (!confirm("Â¿Seguro que deseas eliminar este usuario?")) return;
   try {
     await fbDelete("usuarios", id);
-    await refreshData();
+
     showToast("Usuario eliminado");
     renderUsuariosList();
   } catch (error) {
@@ -1875,7 +1895,7 @@ async function deleteUsuario(id) {
   }
 }
 
-// ─── Init ───────────────────────────────────────────────────
+// â”€â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.addEventListener("DOMContentLoaded", async () => {
   // Ensure we show loading state while initially fetching
   setAppLoading(true);
@@ -1895,7 +1915,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       setBtnLoading(btnMarca, "Agregando...");
       try {
         await fbAdd("marcas", { nombre });
-        await refreshData();
+
         input.value = "";
         showToast("Marca agregada");
         renderMarcasList();
@@ -1918,7 +1938,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       setBtnLoading(btnTipo, "Agregando...");
       try {
         await fbAdd("tipos", { nombre });
-        await refreshData();
+
         input.value = "";
         showToast("Tipo agregado");
         renderTiposList();
@@ -1958,7 +1978,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         const hashedPassword = await hashPassword(password);
         await fbAdd("usuarios", { nombre, usuario, password: hashedPassword, rol });
-        await refreshData();
+
         document.getElementById("usr-nombre").value = "";
         document.getElementById("usr-usuario").value = "";
         document.getElementById("usr-password").value = "";
@@ -1976,7 +1996,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initSelect("usr-rol-trigger", "usr-rol-dropdown");
 
   // Initial load
-  await refreshData();
+
 
   // If memory fallback is used, ensure seed data exists
   if (!firestoreDb) {

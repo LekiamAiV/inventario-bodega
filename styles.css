@@ -6,7 +6,7 @@
 /* ----------------------------------------------------------
    1. Google Fonts
    ---------------------------------------------------------- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Removed Google Fonts import, now using HTML link tags for performance */
 
 /* ----------------------------------------------------------
    2. CSS Custom Properties (Light Mode — Default)
@@ -842,6 +842,7 @@ tr.row-hover:hover {
   border-radius: 9999px;
   background-color: #22c55e;
   flex-shrink: 0;
+  will-change: opacity;
 }
 
 /* ----------------------------------------------------------
