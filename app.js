@@ -5,6 +5,7 @@
  */
 
 // ─── Firebase Configuration ──────────────────────────────────
+// REEMPLAZA ESTOS VALORES CON LOS DE TU PROYECTO DE FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCyPzraUs5A2QgqtvM86DVhywbgi30scdk",
   authDomain: "bodega-ti.firebaseapp.com",
